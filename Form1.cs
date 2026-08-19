@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -19,151 +19,159 @@ namespace Section_C_Question1__StudentRecordManager_
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            lblStatus.Text = string.Empty;
         }
 
+        // -------------------------------------------------------------------
+        // 1.2.1  REGISTER  (insert into tblStudents)
+        // -------------------------------------------------------------------
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            // Validate student number
-            if (!double.TryParse(txtStudentNo.Text, out double studentNo) || studentNo <= 0)
+            // --- Validation ---
+            string studentNo = txtStudentNo.Text.Trim();
+            string fullName = txtFullName.Text.Trim();
+            string course = txtCourse.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(studentNo))
             {
-                MessageBox.Show("Please enter a valid positive number for student number.",
-                                "Validation Error",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-                return;
-            }
-            // Full Name validation
-            if (string.IsNullOrWhiteSpace(txtFullName.Text))
-            {
-                MessageBox.Show("Please enter a valid full name.",
-                                "Validation Error",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-                return;
-            }
-            // Course validation
-            if (string.IsNullOrWhiteSpace(txtCourse.Text))
-            {
-                MessageBox.Show("Please enter a valid course.",
+                MessageBox.Show("Please enter a Student Number.",
                                 "Validation Error",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
                 return;
             }
 
-            // student number, full name, and course are valid, proceed to add to the list in StudentDetails
-            // Update the list sothat it is multidimentsioanal and can store the student number, full name, and course for each student.
-            StudentDetails studentDetails = new StudentDetails();
-            studentDetails.studentDetailsListNo.Add(txtStudentNo.Text);
-            studentDetails.studentDetailsListFullName.Add(txtFullName.Text);
-            studentDetails.studentDetailsListCourse.Add(txtCourse.Text);
+            // Student number must be a positive number
+            if (!double.TryParse(studentNo, out double number) || number <= 0)
+            {
+                MessageBox.Show("Please enter a valid positive number for Student Number.",
+                                "Validation Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                return;
+            }
 
-            // Display the Student regeistration status on the label 
-            lblStatus.Text = "Student registered successfully!";
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                MessageBox.Show("Please enter a Full Name.",
+                                "Validation Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Full name should not be purely numeric
+            if (double.TryParse(fullName, out _))
+            {
+                MessageBox.Show("Full Name cannot be a number. Please enter a valid name.",
+                                "Validation Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(course))
+            {
+                MessageBox.Show("Please enter a Course.",
+                                "Validation Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Prevent duplicate Student Numbers
+            bool alreadyExists = StudentDetails.tblStudents
+                .Any(s => s.StudentNo.Equals(studentNo, StringComparison.OrdinalIgnoreCase));
+
+            if (alreadyExists)
+            {
+                MessageBox.Show("A student with this Student Number already exists.",
+                                "Duplicate Record",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                return;
+            }
+
+            // --- Insert into tblStudents ---
+            Student newStudent = new Student(studentNo, fullName, course);
+            StudentDetails.tblStudents.Add(newStudent);
+
+            // Exact message required by the assessment
+            lblStatus.Text = "Student Registered";
+            lblStatus.ForeColor = Color.Green;
         }
 
+        // -------------------------------------------------------------------
+        // 1.2.2  REMOVE  (delete by StudentNo)
+        // -------------------------------------------------------------------
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            //When this button is clicked, the student details will be removed from the list in StudentDetails accordning to the student number entered in the txtStudentNo TextBox.
-            // Validate student number
-            if (!double.TryParse(txtStudentNo.Text, out double studentNo) || studentNo <= 0)
+            string studentNo = txtStudentNo.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(studentNo))
             {
-                MessageBox.Show("Please enter a valid positive number for student number.",
+                MessageBox.Show("Please enter a Student Number to remove.",
                                 "Validation Error",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
                 return;
             }
 
-            StudentDetails studentDetails = new StudentDetails();
-            // Check if the student number exists in the list
-            try
-            {
-                int index = studentDetails.studentDetailsListNo.IndexOf(txtStudentNo.Text);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("An error occurred while searching for the student: " + ex.Message,
-                                "Search Error",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (studentDetails != null)
-                {
-                    int index = studentDetails.studentDetailsListNo.IndexOf(txtStudentNo.Text);
-                    if (index >= 0)
-                    {
-                        // Student found, display Student Found in the lblStatus
-                        studentDetails.studentDetailsListNo.RemoveAt(index);
-                        studentDetails.studentDetailsListFullName.RemoveAt(index);
-                        studentDetails.studentDetailsListCourse.RemoveAt(index);
+            // Search for the student
+            Student studentToRemove = StudentDetails.tblStudents
+                .FirstOrDefault(s => s.StudentNo.Equals(studentNo, StringComparison.OrdinalIgnoreCase));
 
-                        lblStatus.Text = "Student Found";
+            if (studentToRemove != null)
+            {
+                StudentDetails.tblStudents.Remove(studentToRemove);
 
-                    }
-                    else
-                    {
-                        // Student not found in the lblStatus
-                        lblStatus.Text = "Student Not Found";
-                    }
-                }
+                // Exact message required by the assessment
+                lblStatus.Text = "Student Removed";
+                lblStatus.ForeColor = Color.Green;
             }
-
-            
-          
+            else
+            {
+                // Exact message required by the assessment
+                lblStatus.Text = "Student NOT Found";
+                lblStatus.ForeColor = Color.Red;
+            }
         }
 
+        // -------------------------------------------------------------------
+        // 1.2.3  SEARCH  (find by StudentNo)
+        // -------------------------------------------------------------------
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            //When this button is clicked, the student details will be searched from the list in StudentDetails according to the student number entered in the txtStudentNo TextBox.
-            // Validate student number
-            if (!double.TryParse(txtStudentNo.Text, out double studentNo) || studentNo <= 0)
+            string studentNo = txtStudentNo.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(studentNo))
             {
-                MessageBox.Show("Please enter a valid positive number for student number.",
+                MessageBox.Show("Please enter a Student Number to search.",
                                 "Validation Error",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
                 return;
             }
 
-            //Start list and find student
-            StudentDetails studentDetails = new StudentDetails();
+            // Search for the student
+            Student foundStudent = StudentDetails.tblStudents
+                .FirstOrDefault(s => s.StudentNo.Equals(studentNo, StringComparison.OrdinalIgnoreCase));
 
-            try
+            if (foundStudent != null)
             {
-                int index = studentDetails.studentDetailsListNo.IndexOf(txtStudentNo.Text);
+                // Exact message required by the assessment
+                lblStatus.Text = "Student Found";
+                lblStatus.ForeColor = Color.Green;
+
+                // Optional: populate the other fields so the user can see the record
+                txtFullName.Text = foundStudent.FullName;
+                txtCourse.Text = foundStudent.Course;
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show("An error occurred while searching for the student: " + ex.Message,
-                                "Search Error",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (studentDetails != null)
-                {
-                    int index = studentDetails.studentDetailsListNo.IndexOf(txtStudentNo.Text);
-                    if (index >= 0)
-                    {
-                        // Student found, display Student Found in the lblStatus
-                        lblStatus.Text = "Student Found";
-                    }
-                    else
-                    {
-                        // Student not found in the lblStatus
-                        lblStatus.Text = "Student Not Found";
-                    }
-                }
-
-
-
-
-
+                // Exact message required by the assessment
+                lblStatus.Text = "Student NOT Found";
+                lblStatus.ForeColor = Color.Red;
             }
         }
     }
