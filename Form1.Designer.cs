@@ -1,4 +1,4 @@
-﻿namespace Section_C_Question1__StudentRecordManager_
+namespace Section_C_Question1__StudentRecordManager_
 {
     partial class Form1
     {
@@ -66,9 +66,9 @@
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
             this.label3.Location = new System.Drawing.Point(41, 157);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 17);
+            this.label3.Size = new System.Drawing.Size(71, 17);
             this.label3.TabIndex = 2;
-            this.label3.Text = "FullName";
+            this.label3.Text = "Full Name";
             // 
             // label4
             // 
@@ -150,7 +150,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lblStatus);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Student Record Manager";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -171,4 +171,3 @@
         private System.Windows.Forms.Button btnSearch;
     }
 }
-
